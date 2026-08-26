@@ -10,8 +10,6 @@ def Register(name: str, department: str):
 
     img1 = frame
 
-
-# Create detector and recognizer
     detector = cv2.FaceDetectorYN.create(
         "/home/abhijit71/Desktop/FaceRecon/src/recog/face_detection_yunet_2026may.onnx",
         "",
@@ -23,7 +21,6 @@ def Register(name: str, department: str):
         "",
     )
 
-# Detect faces in both images
     detector.setInputSize((img1.shape[1], img1.shape[0]))
     _, faces1 = detector.detect(img1)
 
@@ -45,20 +42,22 @@ def Register(name: str, department: str):
     else:
         print("Not captured , please try again")
     
+    image = aligned1.tobytes()
+    
+
+    dbWrite()
+    
     
     
 
-def dbWrite():
+def dbWrite(image , rollno : int , name : str , department : str , embedding , status : str):
     conn = sqlite3.connect("college_club.db")
     cursor = conn.cursor()
-    student_data={}
     try:
-        cursor.execute("""
-        INSERT INTO club (rollno, name, department, bin)
-        VALUES (?, ?, ?, ?)
-        """, student_data)
+        cursor.execute()
         conn.commit()
         print("Successfully inserted student data and embedding.")
+        return True
     except sqlite3.IntegrityError:
         print("Student with this roll number already exists.")
 

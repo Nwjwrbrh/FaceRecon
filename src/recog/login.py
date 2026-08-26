@@ -1,5 +1,4 @@
 import cv2
-import time
 
 cap = cv2.VideoCapture(0)
 
@@ -47,9 +46,7 @@ if faces1 is not None and faces2 is not None:
     
     # Align and extract features
     aligned1 = recognizer.alignCrop(img1, face1_box)
-    cv2.imwrite('saved_align.jpg', aligned1)
     aligned2 = recognizer.alignCrop(img2, face2_box)
-    cv2.imwrite('saved_align2.jpg', aligned2)
     
     feature1 = recognizer.feature(aligned1)
     feature2 = recognizer.feature(aligned2)

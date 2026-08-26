@@ -6,6 +6,7 @@ from PySide6.QtCore import Qt, QSize,QByteArray
 from PySide6.QtWidgets import QApplication, QMainWindow, QTableView, QStyledItemDelegate
 from PySide6.QtGui import QPixmap, QImage 
 from PySide6.QtSql import QSqlDatabase, QSqlTableModel
+from datetime import datetime
 
 
 class ImageDelegate(QStyledItemDelegate):
@@ -48,7 +49,7 @@ class ImageDelegate(QStyledItemDelegate):
 
 class DatabaseTableView(QTableView):
 
-    def __init__(self, db_path, table_name, image_column_index=3, parent=None):
+    def __init__(self, db_path="college_club.db", table_name="club", image_column_index=0, parent=None):
 
         super().__init__(parent)
         
@@ -68,7 +69,7 @@ class DatabaseTableView(QTableView):
         self.image_delegate = ImageDelegate(self, thumb_width=80, thumb_height=80)
         self.setItemDelegateForColumn(image_column_index, self.image_delegate)
         
-        self.setColumnHidden(2, True) 
+        self.setColumnHidden(4, True) 
 
         
         self.setStyleSheet("""
@@ -80,13 +81,13 @@ class DatabaseTableView(QTableView):
         self.verticalHeader().setDefaultSectionSize(85) 
         self.setColumnWidth(0, 220)  
         self.setColumnWidth(1, 250)  
-        self.setColumnWidth(2, 250)  
+        self.setColumnWidth(2, 250) 
+        self.setColumnWidth(3, 250)
+        self.setColumnWidth(5, 250)     
         #self.horizontalHeader().setStretchLastSection(True)
         self.setAlternatingRowColors(True)
 
-# ==========================================
-# 3. HELPER FUNCTION TO SETUP TEST DATABASE
-# ==========================================
+
 
 
 def setup_mock_database():
@@ -96,16 +97,20 @@ def setup_mock_database():
     
     # Create the table schema
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS club (
-            rollno INTEGER PRIMARY KEY,
-            name TEXT NOT NULL,
-            department TEXT NOT NULL,
-            bin BLOB NOT NULL
-        )
-    """)
+    CREATE TABLE IF NOT EXISTS club (
+        Image BLOB NOT NULL,
+        RollNo INTEGER PRIMARY KEY,
+        Name TEXT NOT NULL,
+        Department TEXT NOT NULL,
+        embedding BLOB NOT NULL,
+        Status TEXT NOT NULL,
+        Timestamp TEXT NOT NULL
+    )
+""")
+
     
     # 1. Try to read your real "img.jpg" file as raw binary bytes
-    image_path = "/home/abhijit71/Desktop/FaceRecon/src/gui/saved_align.jpg"
+    image_path = "/home/abhijit71/Desktop/FaceRecon/saved_align2.jpg"
     
     if os.path.exists(image_path):
         with open(image_path, 'rb') as file:
@@ -121,9 +126,14 @@ def setup_mock_database():
 
     # 2. Insert fake entries if the table is completely empty
     cursor.execute("SELECT COUNT(*) FROM club")
+    time = datetime.now().strftime("%H:%M:%S")
     if cursor.fetchone()[0] == 0:
-        cursor.execute("INSERT INTO club VALUES (?, ?, ?, ?)", (123456789012345, "Alice Smith", "Computer Science", mock_blob))
-        cursor.execute("INSERT INTO club VALUES (?, ?, ?, ?)", (987654321054321, "Bob Jones", "Electrical Eng", mock_blob))
+        cursor.execute("INSERT INTO club VALUES (?, ?, ?, ?,?,?,?)", (mock_blob,100000000000000, "Alice Smith", "Computer Science",mock_blob,"Present",time))
+        cursor.execute("INSERT INTO club VALUES (?, ?, ?, ?,?,?,?)", (mock_blob , 200000000000000, "Bob Jones", "Electrical Eng", mock_blob , "Absent",time))
+        cursor.execute("INSERT INTO club VALUES (?, ?, ?, ?,?,?,?)", (mock_blob,300000000000000, "Alice Smith", "Computer Science",mock_blob,"Present",time))
+        cursor.execute("INSERT INTO club VALUES (?, ?, ?, ?,?,?,?)", (mock_blob , 400000000000000, "Bob Jones", "Electrical Eng", mock_blob , "Absent",time))
+        cursor.execute("INSERT INTO club VALUES (?, ?, ?, ?,?,?,?)", (mock_blob,500000000000000, "Alice Smith", "Computer Science",mock_blob,"Present",time))
+        cursor.execute("INSERT INTO club VALUES (?, ?, ?, ?,?,?,?)", (mock_blob , 600000000000000, "Bob Jones", "Electrical Eng", mock_blob , "Absent",time))
         conn.commit()
         print("Demo database populated with initial records.")
         
@@ -146,7 +156,7 @@ if __name__ == "__main__":
     table_view = DatabaseTableView(
         db_path="college_club.db", 
         table_name="club", 
-        image_column_index=3
+        image_column_index=0
     )
 
     window.setCentralWidget(table_view)

@@ -1,15 +1,37 @@
-from PySide6.QtWidgets import QApplication, QLabel, QMainWindow , QTabWidget
-from PySide6.QtCore import QTimer, Qt
-from PySide6.QtGui import QImage, QPixmap
-from .panels import UserPanel , AdminPanel
+from PySide6.QtWidgets import QLabel, QMainWindow , QTabWidget
+from PySide6.QtCore import Qt
+
+from .userpanel import UserPanel 
+from .adminpanel import AdminPanel
+from .regpanel import RegPanel
 
 class TabView(QTabWidget):
     def __init__(self):
         super().__init__()
         self.count = 2
         self.isMovable = False
-        self.addTab(UserPanel(),"user")
-        self.addTab(AdminPanel(),"admin")
+        self.userpnl = UserPanel()
+        self.regpnl = RegPanel()
+        self.addTab(self.userpnl,"User")
+        self.addTab(self.regpnl,"Register")
+        self.addTab(AdminPanel(),"Admin")
+        
+        self.currentChanged.connect(self.handle_tab_switch)
+        self.userpnl.live.start_cam()
+
+    def handle_tab_switch(self, index):
+        self.userpnl.live.stop_cam()
+        if hasattr(self.regpnl, 'live'):
+            self.regpnl.live.stop_cam()
+            
+
+        if index == 0:
+            self.userpnl.live.start_cam()
+        elif index == 1 if hasattr(self.regpnl, 'live') else False:
+            self.regpnl.live.start_cam()
+
+
+        
 
 class MainWindow(QMainWindow):
     def __init__(self):

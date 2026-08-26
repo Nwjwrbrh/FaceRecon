@@ -12,7 +12,7 @@ class LiveCam(QWidget):
     def __init__(self):
 
         super().__init__()
-
+        
         self.label = QLabel(self)  #label for rendering img
         self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.label.setSizePolicy(
@@ -27,24 +27,16 @@ class LiveCam(QWidget):
         self.layout.addStretch()
 
 
-        self.cap = cv2.VideoCapture(0)  #video capt.
+        self.cap = None #video capt.
 
+        self.current_raw_frame = None 
+        self.captured = None
+        self.latest_face_data = None
+        
         self.timer = QTimer(self)   #time-frame updater
         self.timer.timeout.connect(self.update_frame)
-        self.timer.start(33)  # ~30 FPS
 
-
-
-
-    def update_frame(self):
-
-        ret, frame = self.cap.read()  #camera frames
-        if not ret:
-            return
-        frame = cv2.flip(frame, 1)
-
-
-        detector = cv2.FaceDetectorYN.create(            #detector node
+        self.detector = cv2.FaceDetectorYN.create(            #detector node
             "/home/abhijit71/Desktop/FaceRecon/src/gui/face_detection_yunet_2026may.onnx",
             "",
             (320, 320),
@@ -52,12 +44,39 @@ class LiveCam(QWidget):
             0.3,
             5000,
         )
-        detector.setInputSize(frame.shape[1::-1])
-        _, faces = detector.detect(frame)
-        if faces is not None:
-            for face in faces:
-                x, y, w, h = face[:4].astype(int)
-                cv2.rectangle(frame, (x, y), (x + w, y + h), (128, 0, 128), 2)
+
+    def start_cam(self):
+        """Call this when the tab gains focus."""
+        if self.cap is None or not self.cap.isOpened():
+            self.cap = cv2.VideoCapture(0)
+            self.timer.start(33)  # Start the update frame loop (~30 FPS)
+
+    def stop_cam(self):
+        """Call this when the tab loses focus."""
+        self.timer.stop()
+        if self.cap is not None:
+            self.cap.release()
+            self.cap = None
+        self.label.clear()  # Clear the last stale fr
+
+
+    def update_frame(self):
+        
+        ret, frame = self.cap.read()  #camera frames
+        if not ret:
+            return
+        frame = cv2.flip(frame, 1)
+
+        self.current_raw_frame = frame.copy()
+        
+        self.detector.setInputSize(frame.shape[1::-1])
+        _, faces = self.detector.detect(frame)
+        if faces is not None and len(faces) > 0:
+            self.latest_face_data = faces[0]  # Store closest active face profile landmarks
+            x, y, w, h = self.latest_face_data[:4].astype(int)
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (128, 0, 128), 2)
+        else:
+            self.latest_face_data = None
 
 
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  #color formatting from cv to qt
@@ -75,3 +94,39 @@ class LiveCam(QWidget):
 
         self.label.setPixmap(scaled_pixmap)
 
+    
+    def capture_photo(self):
+        if self.current_raw_frame is not None:
+            # Encode frame to memory buffer as a clean JPEG image (.jpg)
+            success, encoded_img = cv2.imencode('.jpg', self.current_raw_frame)
+            if success:
+                # Convert the image buffer directly into binary bytes
+                self.captured = encoded_img.tobytes()
+        
+
+    def get_face_image_and_embedding(self):
+        """Processes raw matrices in RAM. Returns (jpeg_image_bytes, embedding_array)"""
+
+        recognizer = cv2.FaceRecognizerSF.create(
+        "/home/abhijit71/Desktop/FaceRecon/src/recog/face_recognition_sface_2021dec.onnx",
+        "",)
+
+        if self.current_raw_frame is None or self.latest_face_data is None:
+            return None, None
+            
+        try:
+            # Warp and align facial features based on YuNet landmarks
+            aligned_face = recognizer.alignCrop(self.current_raw_frame, self.latest_face_data)
+            
+            # Instantly calculate the 128-dimensional array signature
+            feature_embedding = recognizer.feature(aligned_face)
+            
+            # Compress to JPG format bytes for the user interface
+            success, encoded_img = cv2.imencode('.jpg', aligned_face)
+            if success:
+                return encoded_img.tobytes(), feature_embedding
+                
+        except Exception as e:
+            print(f"SFace Pipeline Error: {str(e)}")
+            
+        return None, None

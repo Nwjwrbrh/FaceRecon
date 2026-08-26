@@ -2,7 +2,7 @@ import sqlite3
 import numpy as np
 
 # 1. Connect to SQLite database (creates the file if it doesn't exist)
-conn = sqlite3.connect("college_club.db")
+conn = sqlite3.connect("records.db")
 cursor = conn.cursor()
 
 # 2. Create the 'club' table
@@ -12,7 +12,9 @@ CREATE TABLE IF NOT EXISTS club (
     RollNo INTEGER PRIMARY KEY,
     Name TEXT NOT NULL,
     Department TEXT NOT NULL,
-    embedding BLOB NOT NULL
+    embedding BLOB NOT NULL,
+    Status TEXT NOT NULL 
+    )
 """)
 conn.commit()
 print("Table 'club' created successfully.")
