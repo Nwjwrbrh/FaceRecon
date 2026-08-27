@@ -12,9 +12,10 @@ class TabView(QTabWidget):
         self.isMovable = False
         self.userpnl = UserPanel()
         self.regpnl = RegPanel()
+        self.adminpnl = AdminPanel()
         self.addTab(self.userpnl,"User")
         self.addTab(self.regpnl,"Register")
-        self.addTab(AdminPanel(),"Admin")
+        self.addTab(self.adminpnl,"Admin")
         
         self.currentChanged.connect(self.handle_tab_switch)
         self.userpnl.live.start_cam()
@@ -29,6 +30,9 @@ class TabView(QTabWidget):
             self.userpnl.live.start_cam()
         elif index == 1 if hasattr(self.regpnl, 'live') else False:
             self.regpnl.live.start_cam()
+        elif index == 2:
+            self.adminpnl.table.refreshdb()
+
 
 
         

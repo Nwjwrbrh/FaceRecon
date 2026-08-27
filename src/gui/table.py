@@ -49,7 +49,7 @@ class ImageDelegate(QStyledItemDelegate):
 
 class DatabaseTableView(QTableView):
 
-    def __init__(self, db_path="college_club.db", table_name="club", image_column_index=0, parent=None):
+    def __init__(self, db_path="/home/abhijit71/Desktop/FaceRecon/records.db", table_name="club", image_column_index=0, parent=None):
 
         super().__init__(parent)
         
@@ -87,7 +87,8 @@ class DatabaseTableView(QTableView):
         #self.horizontalHeader().setStretchLastSection(True)
         self.setAlternatingRowColors(True)
 
-
+    def refreshdb(self):
+        self.model.select()
 
 
 def setup_mock_database():
