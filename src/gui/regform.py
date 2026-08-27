@@ -149,7 +149,7 @@ class RegistrationForm(QWidget):
             f"Ready to Insert:\nRoll: {roll}\nName: {name}\nDept: {dept}\nImage Data: Loaded ({len(self.image_bytes)} bytes)"
         )
 
-        conn = sqlite3.connect("/home/abhijit71/Desktop/FaceRecon/records.db")
+        conn = sqlite3.connect("records.db")
         cursor = conn.cursor()
         time = datetime.now().strftime("%H:%M:%S")
         cursor.execute("INSERT INTO club VALUES (?,?,?,?,?,?,?)", (self.image_bytes,roll,name,dept,self.embedding_bytes,"absent",time))

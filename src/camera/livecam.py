@@ -37,7 +37,7 @@ class LiveCam(QWidget):
         self.timer.timeout.connect(self.update_frame)
 
         self.detector = cv2.FaceDetectorYN.create(            #detector node
-            "/home/abhijit71/Desktop/FaceRecon/src/gui/face_detection_yunet_2026may.onnx",
+            "recog/face_detection_yunet_2026may.onnx",
             "",
             (320, 320),
             0.9,
@@ -108,7 +108,7 @@ class LiveCam(QWidget):
         """Processes raw matrices in RAM. Returns (jpeg_image_bytes, embedding_array)"""
 
         recognizer = cv2.FaceRecognizerSF.create(
-        "/home/abhijit71/Desktop/FaceRecon/src/recog/face_recognition_sface_2021dec.onnx",
+        "recog/face_recognition_sface_2021dec.onnx",
         "",)
 
         if self.current_raw_frame is None or self.latest_face_data is None:

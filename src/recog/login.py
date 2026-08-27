@@ -22,13 +22,13 @@ img2 = frame2
 
 # Create detector and recognizer
 detector = cv2.FaceDetectorYN.create(
-    '/home/abhijit71/Desktop/FaceRecon/src/recog/face_detection_yunet_2026may.onnx',
+    'recog/face_detection_yunet_2026may.onnx',
     '',
     (320, 320)
 )
 
 recognizer = cv2.FaceRecognizerSF.create(
-    '/home/abhijit71/Desktop/FaceRecon/src/recog/face_recognition_sface_2021dec.onnx',
+    'recog/face_recognition_sface_2021dec.onnx',
     ''
 )
 

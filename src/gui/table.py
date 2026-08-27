@@ -49,7 +49,7 @@ class ImageDelegate(QStyledItemDelegate):
 
 class DatabaseTableView(QTableView):
 
-    def __init__(self, db_path="/home/abhijit71/Desktop/FaceRecon/records.db", table_name="club", image_column_index=0, parent=None):
+    def __init__(self, db_path="records.db", table_name="club", image_column_index=0, parent=None):
 
         super().__init__(parent)
         

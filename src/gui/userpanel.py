@@ -74,7 +74,7 @@ class UserPanel(QWidget):
 
 
     def loadEmbeddings(self):
-        conn = sqlite3.connect("/home/abhijit71/Desktop/FaceRecon/records.db")
+        conn = sqlite3.connect("records.db")
         cursor = conn.cursor()
         cursor.execute("SELECT embedding FROM club;")
         raw_rows = cursor.fetchall()
