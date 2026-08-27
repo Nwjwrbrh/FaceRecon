@@ -9,3 +9,4 @@ wheels/
 # Virtual environments
 .venv
 records.db
+college_club.db

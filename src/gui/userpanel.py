@@ -10,17 +10,15 @@ class UserPanel(QWidget):
         super().__init__()
         self.live = LiveCam()
         self.loadEmbeddings()
-        # 1. Main layout for this QWidget
+   
         self.layout = QVBoxLayout(self)
-        # 1. Create a regular QLabel
+  
         self.status_lbl = QLabel(self)
         self.status_lbl.setObjectName("statusLabel")
 
-# 2. Initialize it to the hidden "idle" state
         self.status_lbl.setProperty("status", "idle")
         self.status_lbl.setText("Checking")
 
-# Drop it into your layout track
 
 
         self.layout.addStretch()
@@ -88,7 +86,7 @@ class UserPanel(QWidget):
             print(blob)
             if blob:
                 # Assuming embeddings were saved using np.save() bytes or similar raw float buffers
-                arr = np.frombuffer(blob, dtype=np.float32).flatten()
+                arr = np.frombuffer(blob, dtype=np.float32).reshape(1,-1)
                 self.embeddings.append(arr)
     
     

@@ -10,7 +10,7 @@ class RegPanel(QWidget):
         super().__init__()
         
         self.live = LiveCam()
-        # 1. Main layout for this QWidget
+      
         self.layout = QHBoxLayout(self)
         self.form = RegistrationForm()
         
@@ -23,7 +23,7 @@ class RegPanel(QWidget):
         self.capture_btn.clicked.connect(self.handle_capture)
         print(self.live.captured)
     
-        self.capture_btn.setObjectName("captureButton") # Hooks unique style sheet target rule below
+        self.capture_btn.setObjectName("captureButton") 
         self.capture_btn.setFixedWidth(450) 
 
         self.setStyleSheet("""
@@ -57,20 +57,19 @@ class RegPanel(QWidget):
 
     
     def handle_capture(self):
-        """Processes the face in-memory and pushes it directly onto the form view."""
-        # Get the aligned face snapshot and 128-D math embedding array
-        img_bytes, embedding_array = self.live.get_face_image_and_embedding()
+
+        img_bytes, embedding = self.live.get_face_image_and_embedding()
         
-        if img_bytes is not None and embedding_array is not None:
-            # 1. Store the binary variables safely inside your registration form object
-            self.form.image_bytes = img_bytes
-            self.form.embedding_bytes = embedding_array.astype(np.float32).tobytes()
+        if img_bytes is not None and embedding is not None:
+           
+            self.form.image = img_bytes
+            self.form.embedding = embedding.astype(np.float32).tobytes()
             
-            # 2. Instantly update the image preview canvas window on the form
+           
             pixmap = QPixmap()
             pixmap.loadFromData(img_bytes)
             
-            # Scale it cleanly down to fit the form's 200x200 box dimensions
+           
             scaled_pixmap = pixmap.scaled(
                 self.form.img_preview.size(),
                 Qt.AspectRatioMode.KeepAspectRatio,

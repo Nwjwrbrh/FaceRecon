@@ -15,9 +15,7 @@ class LiveCam(QWidget):
         
         self.label = QLabel(self)  #label for rendering img
         self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.label.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
-        )
+        self.label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.label.setMinimumSize(1080, 720)
 
 
@@ -28,16 +26,16 @@ class LiveCam(QWidget):
 
 
         self.cap = None #video capt.
-
         self.current_raw_frame = None 
         self.captured = None
         self.latest_face_data = None
+
         
         self.timer = QTimer(self)   #time-frame updater
         self.timer.timeout.connect(self.update_frame)
 
         self.detector = cv2.FaceDetectorYN.create(            #detector node
-            "recog/face_detection_yunet_2026may.onnx",
+            "src/model/face_detection_yunet_2026may.onnx",
             "",
             (320, 320),
             0.9,
@@ -46,13 +44,11 @@ class LiveCam(QWidget):
         )
 
     def start_cam(self):
-        """Call this when the tab gains focus."""
         if self.cap is None or not self.cap.isOpened():
             self.cap = cv2.VideoCapture(0)
             self.timer.start(33)  # Start the update frame loop (~30 FPS)
 
     def stop_cam(self):
-        """Call this when the tab loses focus."""
         self.timer.stop()
         if self.cap is not None:
             self.cap.release()
@@ -105,26 +101,24 @@ class LiveCam(QWidget):
         
 
     def get_face_image_and_embedding(self):
-        """Processes raw matrices in RAM. Returns (jpeg_image_bytes, embedding_array)"""
 
         recognizer = cv2.FaceRecognizerSF.create(
-        "recog/face_recognition_sface_2021dec.onnx",
+        "src/model/face_recognition_sface_2021dec.onnx",
         "",)
 
         if self.current_raw_frame is None or self.latest_face_data is None:
             return None, None
             
         try:
-            # Warp and align facial features based on YuNet landmarks
+            
             aligned_face = recognizer.alignCrop(self.current_raw_frame, self.latest_face_data)
             
-            # Instantly calculate the 128-dimensional array signature
-            feature_embedding = recognizer.feature(aligned_face)
             
-            # Compress to JPG format bytes for the user interface
+            embedding = recognizer.feature(aligned_face)
+            
             success, encoded_img = cv2.imencode('.jpg', aligned_face)
             if success:
-                return encoded_img.tobytes(), feature_embedding
+                return encoded_img.tobytes(), embedding
                 
         except Exception as e:
             print(f"SFace Pipeline Error: {str(e)}")
