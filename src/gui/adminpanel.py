@@ -1,7 +1,6 @@
-from PySide6.QtWidgets import QWidget, QLabel, QHBoxLayout
-from camera.livecam import LiveCam
-from .table import DatabaseTableView
+from PySide6.QtWidgets import QHBoxLayout, QWidget
 
+from .table import DatabaseTableView
 
 
 class AdminPanel(QWidget):
@@ -15,36 +14,32 @@ class AdminPanel(QWidget):
         self.layout.addWidget(self.table)
         self.layout.addStretch()
         self.setLayout(self.layout)
-        
+
         self.setStyleSheet("""
-            /* --- Parent Container Slate Canvas Frame --- */
             QWidget {
-                background-color: #f8fafc;        /* Soft neutral background styling */
+                background-color: #f8fafc;
             }
 
-            /* --- Table Component View Box Layout --- */
             QTableView {
                 background-color: #ffffff;
-                border: 1px solid #e2e8f0;        /* Sleek card border layout */
-                border-radius: 8px;                /* Curved smooth layout window boundaries */
-                gridline-color: #f1f5f9;           /* Soft cell separator tracks */
-                selection-background-color: #eff6ff; /* Light electric blue selected row highlight */
-                selection-color: #1e3a8a;          /* Deep bold text for focused rows */
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                gridline-color: #f1f5f9;
+                selection-background-color: #eff6ff;
+                selection-color: #1e3a8a;
                 outline: none;
             }
 
-            /* --- Modern High-Contrast Grid Header Sections --- */
             QHeaderView::section {
-                background-color: #f1f5f9;        /* Structured grey header backing canvas */
-                color: #475569;                    /* Professional deep slate tracking text */
+                background-color: #f1f5f9;
+                color: #475569;
                 padding: 12px;
-                font-weight: 700;                  /* Strong bold headers */
+                font-weight: 700;
                 font-size: 13px;
                 border: none;
-                border-bottom: 2px solid #cbd5e1;  /* Defining boundary bottom line track */
+                border-bottom: 2px solid #cbd5e1;
             }
 
-            /* --- Clean Minimalist Scrollbars --- */
             QScrollBar:vertical {
                 border: none;
                 background: #f1f5f9;
@@ -58,9 +53,9 @@ class AdminPanel(QWidget):
                 border-radius: 5px;
             }
             QScrollBar::handle:vertical:hover {
-                background: #94a3b8;               /* Darker slate handle highlight on track hover */
+                background: #94a3b8;
             }
             QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-                height: 0px;                       /* Removes clunky legacy navigation arrow buttons */
+                height: 0px;
             }
-        """)
+ """)
