@@ -11,4 +11,5 @@ dependencies = [
     "opencv-contrib-python-headless>=5.0.0.93",
     "pillow>=12.3.0",
     "pyside6-essentials>=6.11.2",
+    "sqlite-vec>=0.1.9",
 ]

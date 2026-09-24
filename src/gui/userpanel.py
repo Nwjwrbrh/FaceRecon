@@ -1,17 +1,15 @@
 import sqlite3
-
-import numpy as np
+import sqlite_vec
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget
 
 from camera.livecam import LiveCam
-
+from datetime import date
 
 class UserPanel(QWidget):
     def __init__(self):
         super().__init__()
         self.live = LiveCam()
-        self.loadEmbeddings()
 
         self.layout = QVBoxLayout(self)
 
@@ -30,33 +28,26 @@ class UserPanel(QWidget):
     /* --- Base Style for the Status Label --- */
     QLabel#statusLabel {
         font-family: 'Segoe UI', Arial, sans-serif;
-        font-size: 13px;
+        font-size: 18px;
         font-weight: 600;
-        border-radius: 6px;
         padding: 8px 16px;
         qproperty-alignment: 'AlignCenter'; /* Force text centering via CSS */
     }
 
     /* --- Loading State --- */
     QLabel#statusLabel[status="loading"] {
-        color: #2563eb;
-        background-color: #eff6ff;
-        border: 1px solid #bfdbfe;
+        color: #454545;
     }
 
     /* --- Success State --- */
     QLabel#statusLabel[status="success"] {
-        color: #166534;
-        background-color: #f0fdf4;
-        border: 1px solid #bbf7d0;
+        color: #a6ff63;
         font-weight: bold;
     }
 
     /* --- Failure State --- */
     QLabel#statusLabel[status="failure"] {
-        color: #991b1b;
-        background-color: #fef2f2;
-        border: 1px solid #fecaca;
+        color: #FFCDD2;
         font-weight: bold;
     }
 
@@ -70,28 +61,6 @@ class UserPanel(QWidget):
         self.check_timer.timeout.connect(self.CaptureCheck)
         self.check_timer.start(100)
 
-    def loadEmbeddings(self):
-        conn = sqlite3.connect("records.db")
-        cursor = conn.cursor()
-        cursor.execute("SELECT embedding FROM club;")
-        raw_rows = cursor.fetchall()
-        print(raw_rows)
-        conn.close()
-
-        self.embeddings = []
-        for row in raw_rows:
-            print(row)
-            blob = row[0]
-            print("=" * 10)
-            print("blob type:", type(blob))
-            print("blob length:", len(blob) if blob is not None else None)
-            # print("blob:", blob[:20] if blob is not None else None)
-
-            # if blob:
-            # Assuming embeddings were saved using np.save() bytes or similar raw float buffers
-            # arr = np.frombuffer(blob, dtype=np.float32).reshape(1, -1)
-            # self.embeddings.append(arr)
-
     def update_status(self, state, text):
         """Helper to change properties and force PySide to redraw the CSS stylesheet"""
         self.status_lbl.setProperty("status", state)
@@ -103,30 +72,52 @@ class UserPanel(QWidget):
         """This function runs repeatedly via QTimer to scan faces against the DB."""
         # 1. Grab the current frame's embedding from your LiveCam object
         # (Adjust this method name depending on how your LiveCam exposes the current frame/embedding)
-        current_embedding = self.live.get_current_embedding()
+        _ , embedding = self.live.get_face_image_and_embedding()
 
-        if current_embedding is None:
+
+
+        if embedding is None:
             # No face detected in the frame right now
-            self.update_status("idle", "Searching for face...")
+            self.update_status("idle", "Searching for face o_o ...")
             return
 
-        self.update_status("loading", "Matching with records...")
 
         # 2. Compare current frame embedding against loaded database embeddings
-        match_found = False
-        threshold = (
-            0.6  # Adjust this based on your facial model (e.g., Facenet/InsightFace)
+
+        conn = sqlite3.connect("database.db")
+        conn.enable_load_extension(True)
+        sqlite_vec.load(conn)
+        conn.enable_load_extension(False)
+        cursor = conn.cursor()
+        cursor.execute(
+        """
+        SELECT
+            u.rowid,
+            u.Name,
+            u.RollNo,
+            v.distance
+        FROM FaceVectors v
+        JOIN Users u ON u.rowid = v.rowid
+        WHERE v.embedding MATCH ?
+          AND k = 1
+        ORDER BY v.distance
+        """,
+            (embedding,),
         )
 
-        for known_emb in self.known_embeddings:
-            # Example using Euclidean distance; switch to Cosine similarity if your model prefers it
-            dist = np.linalg.norm(current_embedding - known_emb)
-            if dist < threshold:
-                match_found = True
-                break
+        matched_user = cursor.fetchone()
+
+        if matched_user:
+            user_id, name, roll_no, distance = matched_user
+
+            if distance < 8.7:
+                col_name = date.today().strftime('%Y-%m-%d')
+                update_query = f"UPDATE Users SET '{col_name}' = 'Present' WHERE rowid = ?;"
+                cursor.execute(update_query, (user_id,))
+                conn.commit()
+                self.update_status("success", f"Matched with : {name} ( Roll No. : {roll_no} ) , Marked Present *_* ")
+            else:
+                self.update_status("failure", f"None with this face found in the Database  -_- ")
+
 
         # 3. Update the UI visually based on the database check results
-        if match_found:
-            self.update_status("success", "Access Granted ✔")
-        else:
-            self.update_status("failure", "Unknown User ❌")

@@ -1,6 +1,5 @@
 import sqlite3
-from datetime import datetime
-
+import sqlite_vec
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
@@ -19,7 +18,8 @@ class RegistrationForm(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)  # Links parent for memory safety
 
-        self.image_bytes = None  # To hold the uploaded image binary data
+        self.image_bytes = None
+        self.image_embeddings = None  # To hold the uploaded image binary data
         self.init_ui()
 
     def init_ui(self):
@@ -48,10 +48,15 @@ class RegistrationForm(QWidget):
         self.dept_dropdown = QComboBox()
         self.dept_dropdown.setPlaceholderText("Select Department...")
         self.dept_dropdown.addItems(
-            ["", "AI & Robotics", "Electrical Eng", "Mechanical Eng"]
+            ["", "Content", "Design","Event","Media and PR","Research and Project","Technical","Web and IT","Workshop"]
         )
 
         # An empty graphical canvas container to host the selected image thumbnail
+        self.position_dropdown = QComboBox()
+        self.position_dropdown.setPlaceholderText("Select Position...")
+        self.position_dropdown.addItems(
+            ["", "Convenor", "Co-ordinator", "Member"]
+        )
         self.img_preview = QLabel()
         self.img_preview.setFixedSize(432, 288)
         self.img_preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -59,10 +64,11 @@ class RegistrationForm(QWidget):
         self.img_preview.setText("No Image Chosen")
 
         # 4. Action Save Button
-        self.submit_btn = QPushButton("Save Record to Vault")
+        self.submit_btn = QPushButton("Register User")
         self.submit_btn.clicked.connect(self.handle_submit)
 
         # Assemble elements cleanly down the main layout track
+        main_layout.setSpacing(20)
         main_layout.addStretch()
         main_layout.addWidget(self.img_preview, alignment=Qt.AlignmentFlag.AlignCenter)
 
@@ -72,37 +78,37 @@ class RegistrationForm(QWidget):
 
         main_layout.addWidget(self.dept_dropdown)
 
+        main_layout.addWidget(self.position_dropdown)
         main_layout.addWidget(self.submit_btn)
         main_layout.addStretch()
         # 5. Styling via QSS Stylesheet
         self.setStyleSheet("""
             QWidget {
-                background-color: #f7f9fc;
+                background-color: #292929;
                 font-family: 'Segoe UI', Arial, sans-serif;
                 font-size: 14px;
-                color: #333333;
+                color: #dcdcdc;
             }
             QLabel {
                 font-weight: bold;
-                color: #4A5568;
+                color: #dcdcdc;
             }
             QLabel#header {
                 font-size: 18px;
-                color: #1A365D;
+                color: #dcdcdc;
             }
             QLineEdit, QComboBox {
-                background-color: #ffffff;
-                border: 1px solid #CBD5E0;
+                background-color: #292929;
                 border-radius: 6px;
                 padding: 10px;
+                selection-background-color: #454545;
             }
             QLineEdit:focus, QComboBox:focus {
-                border: 2px solid #3182CE;
+                background-color: #454545;
             }
             QPushButton {
-                background-color: #0f172a;
-                color: #ffffff;
-                border: 1px solid #1e293b;
+                background-color: #abc662;
+                color: #1e1e1e;
                 border-radius: 8px;
                 font-size: 14px;
                 font-weight: 700;
@@ -111,11 +117,10 @@ class RegistrationForm(QWidget):
                 margin-top: 5px;
             }
             QPushButton:hover {
-                background-color: #1e293b;
-                border-color: #3b82f6;
+                background-color: #daff78;
             }
             QPushButton:pressed {
-                background-color: #020617;
+                background-color: #daff78;
                 padding-top: 11px;
                 padding-bottom: 9px;
             }
@@ -135,6 +140,7 @@ class RegistrationForm(QWidget):
         roll = self.roll_input.text().strip()
         name = self.name_input.text().strip()
         dept = self.dept_dropdown.currentText()
+        position = self.position_dropdown.currentText()
 
         # Simple Constraints Form Validation
         if len(roll) != 12 or not roll.isdigit():
@@ -166,16 +172,28 @@ class RegistrationForm(QWidget):
             f"Ready to Insert:\nRoll: {roll}\nName: {name}\nDept: {dept}\nImage Data: Loaded ({len(self.image_bytes)} bytes)",
         )
 
-        conn = sqlite3.connect("records.db")
+        conn = sqlite3.connect("database.db")
+        conn.enable_load_extension(True)
+        sqlite_vec.load(conn)
+        conn.enable_load_extension(False)
         cursor = conn.cursor()
-        time = datetime.now().strftime("%H:%M:%S")
+
         cursor.execute(
-            "INSERT INTO club VALUES (?,?,?,?,?,?,?)",
-            (self.image_bytes, roll, name, dept, self.embedding_bytes, "absent", time),
+            """
+            INSERT INTO Users (Image, RollNo, Name, Department, Position)
+            VALUES (?, ?, ?, ?, ?)
+        """,
+            (self.image_bytes, roll, name, dept, position),
         )
+
+        user_id = cursor.lastrowid
+        cursor.execute(
+            """
+            INSERT INTO FaceVectors(rowid, embedding)
+            VALUES (?, ?)
+        """,
+            (user_id, self.image_embeddings),
+        )
+
         conn.commit()
         conn.close()
-        print(
-            f"Ready to Insert:\nRoll: {roll}\nName: {name}\nDept: {dept}\nImage Data: Loaded ({len(self.image_bytes)} bytes)"
-        )
-        # Here you would call your `cursor.execute("INSERT INTO club...")` routine!

@@ -1,47 +1,77 @@
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QLabel, QMainWindow, QTabWidget
-
 from .adminpanel import AdminPanel
 from .regpanel import RegPanel
 from .userpanel import UserPanel
+from .sidebar import SideBar
+from .home import HomePage
 
 
-class TabView(QTabWidget):
+
+from PySide6.QtWidgets import QHBoxLayout, QMainWindow, QStackedWidget, QWidget
+
+
+
+
+class TabView(QStackedWidget):
     def __init__(self):
         super().__init__()
-        self.count = 2
-        self.isMovable = False
-        self.userpnl = UserPanel()
-        self.regpnl = RegPanel()
-        self.adminpnl = AdminPanel()
-        self.addTab(self.userpnl, "User")
-        self.addTab(self.regpnl, "Register")
-        self.addTab(self.adminpnl, "Admin")
-
+        # init page objects
+        self.home = HomePage()
+        self.userPanel =UserPanel()
+        self.adminPanel = AdminPanel()
+        self.regPanel = RegPanel()
+        # adding to stackwidget
+        self.addWidget(self.home)
+        self.addWidget(self.userPanel)
+        self.addWidget(self.regPanel)
+        self.addWidget(self.adminPanel)
+        
+        
         self.currentChanged.connect(self.handle_tab_switch)
-        self.userpnl.live.start_cam()
-
+        self.home.startButton.clicked.connect(lambda: self.setCurrentIndex(1))
+        self.home.startButton.clicked.connect(lambda: self.home.attendanceInit())
+ 
+    
     def handle_tab_switch(self, index):
-        self.userpnl.live.stop_cam()
-        if hasattr(self.regpnl, "live"):
-            self.regpnl.live.stop_cam()
+        if index == 1:
+            if hasattr(self.regPanel, "live"):
+                self.regPanel.live.stop_cam()
+            self.userPanel.live.start_cam()
+        elif index == 2 if hasattr(self.regPanel, "live") else False:
+            self.userPanel.live.stop_cam()
+            self.regPanel.live.start_cam()
+        elif index == 3:
+            self.adminPanel.table.refreshdb()
 
-        if index == 0:
-            self.userpnl.live.start_cam()
-        elif index == 1 if hasattr(self.regpnl, "live") else False:
-            self.regpnl.live.start_cam()
-        elif index == 2:
-            self.adminpnl.table.refreshdb()
+    
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("OpenCV Camera")
-        # self.resize(800, 600)
 
-        # Label to display video frames
+        self.setWindowTitle("Application")
+
+        self.setStyleSheet("""
+            QMainWindow {
+                background-color: #181818;
+            }
+        """)
+
+        self.mainWidget = QWidget()
+        self.sidebar = SideBar()
         self.tab = TabView()
-        self.label = QLabel(self)
-        self.label.setAlignment(Qt.AlignCenter)
-        self.setCentralWidget(self.tab)
+
+        self.layout = QHBoxLayout()
+        self.layout.addWidget(self.sidebar)
+        self.layout.addWidget(self.tab)
+
+        self.mainWidget.setLayout(self.layout)
+
+        
+
+        # button connect for tab change with every page
+        self.sidebar.home.clicked.connect(lambda: self.tab.setCurrentIndex(0))
+        self.sidebar.reg.clicked.connect(lambda: self.tab.setCurrentIndex(2))
+        self.sidebar.admin.clicked.connect(lambda: self.tab.setCurrentIndex(3))
+
+        self.setCentralWidget(self.mainWidget)

@@ -1,20 +1,38 @@
 import sqlite3
 
-conn = sqlite3.connect("records.db")
-cursor = conn.cursor()
+import sqlite_vec
 
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS club (
-    Image BLOB NOT NULL,
-    RollNo INTEGER PRIMARY KEY,
-    Name TEXT NOT NULL,
-    Department TEXT NOT NULL,
-    embedding BLOB NOT NULL,
-    Status TEXT NOT NULL,
-    Timestamp TEXT NOT NULL 
-    )
-""")
-conn.commit()
-print("Table 'club' created successfully.")
 
-conn.close()
+def dbInitializer(path : str):
+    db = sqlite3.connect(path)
+    db.enable_load_extension(True)
+    sqlite_vec.load(db)
+    db.enable_load_extension(False)
+
+    db.execute("PRAGMA foreign_keys = ON")
+    cursor = db.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS Users (
+        id INTEGER PRIMARY KEY,
+        Image BLOB NOT NULL,
+        RollNo INTEGER NOT NULL,
+        Name TEXT NOT NULL,
+        Department TEXT NOT NULL,
+        Position TEXT NOT NULL,
+        "Joined On" DATE DEFAULT (date('now'))
+    );
+    """)
+
+    cursor.execute("""
+    CREATE VIRTUAL TABLE IF NOT EXISTS FaceVectors USING vec0(
+        embedding float[128]
+    );
+    """)
+
+
+    db.commit()
+
+    print("Table 'Users , FaceVectors' created successfully.")
+
+    db.close()
