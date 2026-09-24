@@ -1,5 +1,4 @@
 import sqlite3
-
 import sqlite_vec
 
 
@@ -30,9 +29,8 @@ def dbInitializer(path : str):
     );
     """)
 
-
     db.commit()
-
+    db.close()
     print("Table 'Users , FaceVectors' created successfully.")
 
-    db.close()
+    

@@ -16,42 +16,28 @@ from PySide6.QtWidgets import (
 
 class RegistrationForm(QWidget):
     def __init__(self, parent=None):
-        super().__init__(parent)  # Links parent for memory safety
-
+        super().__init__(parent)
         self.image_bytes = None
-        self.image_embeddings = None  # To hold the uploaded image binary data
+        self.image_embeddings = None
         self.init_ui()
 
-    def init_ui(self):
 
-        # 1. Main Structural Layout
+
+    def init_ui(self):
         main_layout = QVBoxLayout(self)
         self.setMaximumWidth(550)
         main_layout.setContentsMargins(30, 30, 30, 30)
 
-        # Form Header Accent Text
-
         self.roll_input = QLineEdit()
-        self.roll_input.setPlaceholderText(
-            "Roll Number (12-Digits)  e.g., 123456789012"
-        )
-        # Restrict entry to digits only up to 15 characters max
+        self.roll_input.setPlaceholderText("Roll Number (12-Digits)  e.g., 123456789012")
         self.roll_input.setMaxLength(12)
-
-        # Name
-        # self.name_label = QLabel("Full Name:")
         self.name_input = QLineEdit()
         self.name_input.setPlaceholderText("Enter student name")
-
-        # Department
-
         self.dept_dropdown = QComboBox()
         self.dept_dropdown.setPlaceholderText("Select Department...")
         self.dept_dropdown.addItems(
             ["", "Content", "Design","Event","Media and PR","Research and Project","Technical","Web and IT","Workshop"]
         )
-
-        # An empty graphical canvas container to host the selected image thumbnail
         self.position_dropdown = QComboBox()
         self.position_dropdown.setPlaceholderText("Select Position...")
         self.position_dropdown.addItems(
@@ -62,26 +48,19 @@ class RegistrationForm(QWidget):
         self.img_preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.img_preview.setFrameStyle(QFrame.Shape.StyledPanel | QFrame.Shadow.Sunken)
         self.img_preview.setText("No Image Chosen")
-
-        # 4. Action Save Button
         self.submit_btn = QPushButton("Register User")
         self.submit_btn.clicked.connect(self.handle_submit)
 
-        # Assemble elements cleanly down the main layout track
         main_layout.setSpacing(20)
         main_layout.addStretch()
         main_layout.addWidget(self.img_preview, alignment=Qt.AlignmentFlag.AlignCenter)
-
         main_layout.addWidget(self.roll_input)
-
         main_layout.addWidget(self.name_input)
-
         main_layout.addWidget(self.dept_dropdown)
-
         main_layout.addWidget(self.position_dropdown)
         main_layout.addWidget(self.submit_btn)
         main_layout.addStretch()
-        # 5. Styling via QSS Stylesheet
+
         self.setStyleSheet("""
             QWidget {
                 background-color: #292929;
@@ -126,6 +105,8 @@ class RegistrationForm(QWidget):
             }
         """)
 
+
+
     def handle_image_upload(self, image):
         if image:
             pixmap = QPixmap(image)
@@ -136,27 +117,27 @@ class RegistrationForm(QWidget):
             )
             self.img_preview.setPixmap(scaled_pixmap)
 
+
+
     def handle_submit(self):
         roll = self.roll_input.text().strip()
         name = self.name_input.text().strip()
         dept = self.dept_dropdown.currentText()
         position = self.position_dropdown.currentText()
 
-        # Simple Constraints Form Validation
+
         if len(roll) != 12 or not roll.isdigit():
             QMessageBox.warning(
                 self,
                 "Validation Error",
-                "The Roll Number must be exactly 15 digits long.",
+                "The Roll Number must be exactly 12 digits long.",
             )
             return
-
         if not name:
             QMessageBox.warning(
                 self, "Validation Error", "Please provide a valid Name."
             )
             return
-
         if not self.image_bytes:
             QMessageBox.warning(
                 self,
@@ -164,12 +145,10 @@ class RegistrationForm(QWidget):
                 "Please upload a profile picture before saving.",
             )
             return
-
-        # Success Action Loop Data Extraction Packaging
         QMessageBox.information(
             self,
             "Form Validation Success",
-            f"Ready to Insert:\nRoll: {roll}\nName: {name}\nDept: {dept}\nImage Data: Loaded ({len(self.image_bytes)} bytes)",
+            f"Ready to Register:\nRoll: {roll}\nName: {name}\nDept: {dept}\nPosition: {position}\nImage Data: Loaded ({len(self.image_bytes)} bytes)",
         )
 
         conn = sqlite3.connect("database.db")
@@ -177,23 +156,17 @@ class RegistrationForm(QWidget):
         sqlite_vec.load(conn)
         conn.enable_load_extension(False)
         cursor = conn.cursor()
-
         cursor.execute(
             """
             INSERT INTO Users (Image, RollNo, Name, Department, Position)
             VALUES (?, ?, ?, ?, ?)
-        """,
-            (self.image_bytes, roll, name, dept, position),
-        )
+        """,(self.image_bytes, roll, name, dept, position))
 
         user_id = cursor.lastrowid
         cursor.execute(
             """
             INSERT INTO FaceVectors(rowid, embedding)
             VALUES (?, ?)
-        """,
-            (user_id, self.image_embeddings),
-        )
-
+        """,(user_id, self.image_embeddings))
         conn.commit()
         conn.close()

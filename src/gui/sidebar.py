@@ -1,15 +1,7 @@
-from PySide6.QtCore import (
-    QEasingCurve,
-    QParallelAnimationGroup,
-    QPropertyAnimation,
-)
-from PySide6.QtGui import QPainter
 from PySide6.QtWidgets import (
     QButtonGroup,
     QLabel,
     QPushButton,
-    QStyle,
-    QStyleOption,
     QVBoxLayout,
     QWidget,
 )
@@ -17,9 +9,7 @@ from PySide6.QtWidgets import (
 
 class SideBar(QWidget):
     def __init__(self, parent=None):
-
         super().__init__(parent)
-
         # State vars
         self.open = True
         self.animation_group = None
@@ -44,17 +34,14 @@ class SideBar(QWidget):
         self.nav_layout = QVBoxLayout()
         self.nav_layout.setContentsMargins(10, 0, 10, 0)
         self.nav_layout.setSpacing(5)
-        # home button
         self.home = QPushButton("Home")
         self.home.setCheckable(True)
         self.button_group.addButton(self.home)
         self.nav_layout.addWidget(self.home)
-        # regumnet translation button
         self.reg = QPushButton("Register")
         self.reg.setCheckable(True)
         self.button_group.addButton(self.reg)
         self.nav_layout.addWidget(self.reg)
-        # voice translation button
         self.admin = QPushButton("Admin")
         self.admin.setCheckable(True)
         self.button_group.addButton(self.admin)

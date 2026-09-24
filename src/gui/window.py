@@ -4,33 +4,25 @@ from .userpanel import UserPanel
 from .sidebar import SideBar
 from .home import HomePage
 
-
-
 from PySide6.QtWidgets import QHBoxLayout, QMainWindow, QStackedWidget, QWidget
-
-
 
 
 class TabView(QStackedWidget):
     def __init__(self):
         super().__init__()
-        # init page objects
         self.home = HomePage()
         self.userPanel =UserPanel()
         self.adminPanel = AdminPanel()
         self.regPanel = RegPanel()
-        # adding to stackwidget
         self.addWidget(self.home)
         self.addWidget(self.userPanel)
         self.addWidget(self.regPanel)
         self.addWidget(self.adminPanel)
         
-        
         self.currentChanged.connect(self.handle_tab_switch)
         self.home.startButton.clicked.connect(lambda: self.setCurrentIndex(1))
         self.home.startButton.clicked.connect(lambda: self.home.attendanceInit())
  
-    
     def handle_tab_switch(self, index):
         if index == 1:
             if hasattr(self.regPanel, "live"):
@@ -48,9 +40,7 @@ class TabView(QStackedWidget):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-
-        self.setWindowTitle("Application")
-
+        self.setWindowTitle("FaceRecon")
         self.setStyleSheet("""
             QMainWindow {
                 background-color: #181818;
@@ -64,12 +54,8 @@ class MainWindow(QMainWindow):
         self.layout = QHBoxLayout()
         self.layout.addWidget(self.sidebar)
         self.layout.addWidget(self.tab)
-
         self.mainWidget.setLayout(self.layout)
 
-        
-
-        # button connect for tab change with every page
         self.sidebar.home.clicked.connect(lambda: self.tab.setCurrentIndex(0))
         self.sidebar.reg.clicked.connect(lambda: self.tab.setCurrentIndex(2))
         self.sidebar.admin.clicked.connect(lambda: self.tab.setCurrentIndex(3))
