@@ -1,5 +1,8 @@
+from utils import dataPath
 import sqlite3
 from datetime import date
+
+from utils import resourcePath
 
 from PySide6.QtCore import Qt , QSize
 from PySide6.QtGui import QMovie , QTransform
@@ -33,7 +36,7 @@ class GIFButtonWidget(QPushButton):
 
         self.gif_label = QLabel(self)
         self.gif_label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
-        self.movie = QMovie("assets/startArrow.gif")
+        self.movie = QMovie(resourcePath("startArrow.gif"))
         self.rotation_angle = -90
         self.movie.frameChanged.connect(self.apply_rotation)
         self.movie.start()
@@ -79,7 +82,7 @@ class HomePage(QWidget):
         content_layout.setSpacing(25)
 
         rowOne_layout = QHBoxLayout()
-        GIFPlayback = GIFPlayer(512,512,"assets/launchyourself.gif")
+        GIFPlayback = GIFPlayer(512,512,resourcePath("launchyourself.gif"))
         rowOne_layout.addWidget(GIFPlayback, alignment=Qt.AlignCenter)
   
         rowTwo_layout = QGridLayout()
@@ -93,7 +96,7 @@ class HomePage(QWidget):
 
 
     def attendanceInit(self):
-        conn = sqlite3.connect("database.db")
+        conn = sqlite3.connect(dataPath("database.db"))
         cursor = conn.cursor()
         column_name = date.today().strftime('%Y-%m-%d')
         

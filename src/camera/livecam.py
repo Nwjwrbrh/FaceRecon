@@ -1,4 +1,7 @@
 import cv2
+
+from utils import modelPath
+
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtWidgets import QLabel, QSizePolicy, QVBoxLayout, QWidget
@@ -29,7 +32,7 @@ class LiveCam(QWidget):
         
         # YuNet model node 
         self.detector = cv2.FaceDetectorYN.create(  
-            "src/model/face_detection_yunet_2026may.onnx",
+            modelPath("face_detection_yunet_2026may.onnx"),
             "",
             (320, 320),
             0.9,
@@ -114,7 +117,7 @@ class LiveCam(QWidget):
     def get_face_image_and_embedding(self):
         # recognizer model sface node
         recognizer = cv2.FaceRecognizerSF.create(
-            "src/model/face_recognition_sface_2021dec.onnx",
+            modelPath("face_recognition_sface_2021dec.onnx"),
             "",
         )
 

@@ -3,6 +3,7 @@ import sys
 from PySide6.QtGui import QColor, QPalette
 from PySide6.QtWidgets import QApplication
 
+from utils import dataPath
 from gui.window import MainWindow
 from db.initializer import dbInitializer
 
@@ -10,7 +11,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     path = "database.db"
-    dbInitializer(path)
+    dbInitializer(dataPath(path))
 
     dark_palette = QPalette()
     dark_palette.setColor(QPalette.ColorRole.Window, QColor("#181818"))

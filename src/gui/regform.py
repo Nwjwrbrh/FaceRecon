@@ -1,5 +1,8 @@
 import sqlite3
 import sqlite_vec
+
+from utils import dataPath
+
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
@@ -151,7 +154,7 @@ class RegistrationForm(QWidget):
             f"Ready to Register:\nRoll: {roll}\nName: {name}\nDept: {dept}\nPosition: {position}\nImage Data: Loaded ({len(self.image_bytes)} bytes)",
         )
 
-        conn = sqlite3.connect("database.db")
+        conn = sqlite3.connect(dataPath("database.db"))
         conn.enable_load_extension(True)
         sqlite_vec.load(conn)
         conn.enable_load_extension(False)

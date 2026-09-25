@@ -2,6 +2,7 @@ import sqlite3
 import sqlite_vec
 from datetime import date
 
+from utils import dataPath
 from camera.livecam import LiveCam
 
 from PySide6.QtCore import QTimer
@@ -67,7 +68,7 @@ class UserPanel(QWidget):
             self.update_status("idle", "Searching for face o_o ...")
             return
 
-        conn = sqlite3.connect("database.db")
+        conn = sqlite3.connect(dataPath("database.db"))
         conn.enable_load_extension(True)
         sqlite_vec.load(conn)
         conn.enable_load_extension(False)
@@ -89,7 +90,7 @@ class UserPanel(QWidget):
         matched_user = cursor.fetchone()
         if matched_user:
             user_id, name, roll_no, distance = matched_user
-            if distance < 8.7:
+            if distance < 9:
                 col_name = date.today().strftime('%Y-%m-%d')
                 update_query = f"UPDATE Users SET '{col_name}' = 'Present' WHERE rowid = ?;"
                 cursor.execute(update_query, (user_id,))

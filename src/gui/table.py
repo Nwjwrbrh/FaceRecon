@@ -1,5 +1,7 @@
 import sys
 
+from utils import dataPath
+
 from PySide6.QtCore import QByteArray, QSize, Qt
 from PySide6.QtGui import QImage, QPixmap , QColor
 from PySide6.QtSql import QSqlDatabase, QSqlTableModel
@@ -90,7 +92,6 @@ class ReadOnlySqlModel(QSqlTableModel):
 class DatabaseTableView(QTableView):
     def __init__(
         self,
-        db_path="database.db",
         table_name="Users",
         image_column_index=1,
         parent=None,
@@ -98,7 +99,7 @@ class DatabaseTableView(QTableView):
 
         super().__init__(parent)
         self.db = QSqlDatabase.addDatabase("QSQLITE")
-        self.db.setDatabaseName(db_path)
+        self.db.setDatabaseName(dataPath("database.db"))
         if not self.db.open():
             print("Fatal Error: Could not connect QSqlDatabase.")
             sys.exit(1)
