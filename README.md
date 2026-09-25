@@ -90,6 +90,30 @@ This folder contains the models from OpenCV Zoo :
 - **uv**: An extremely fast Python package and project manager written in Rust, used for managing environments and dependencies seamlessly.
   - [uv Documentation](https://docs.astral.sh/uv/)
 
+
+## Building from source
+
+### Pre-requisite : uv , pyinstaller , inno setup (for windows)
+* We have basic binary building support for linux and mac ; and binary + setup file support for windows
+
+#### Linux/Mac
+* Install uv and set it on path , then
+```
+git clone https://github.com/Nwjwrbrh/FaceRecon.git
+uv sync
+uv run pyinstaller --clean FaceRecon.spec
+```
+* U will see a folder ```dist/FaceRecon``` on root of project directory , inside FaceRecon dir lies the executable and dependency folder
+
+#### Windows
+
+* Repeat same steps as in Linux/Mac build : as FaceRecon.spec is cross-platform
+
+* For setup file : install inno setup , many tutorials on the internet <br>
+-> Choose the FaceRecon.iss file in gui mode and create setup file
+
+
+
 ## Authors
 
 <td align="center">
