@@ -28,7 +28,7 @@ class AdminPanel(QWidget):
             outline: none;
         }
         QTableView::item {
-            padding: 10px 15px;
+            padding: 10px;
             border: none;
         }
         QTableView::item:selected {

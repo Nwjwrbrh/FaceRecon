@@ -5,7 +5,7 @@ from utils import dataPath
 from PySide6.QtCore import QByteArray, QSize, Qt
 from PySide6.QtGui import QImage, QPixmap , QColor
 from PySide6.QtSql import QSqlDatabase, QSqlTableModel
-from PySide6.QtWidgets import QStyledItemDelegate, QTableView , QHeaderView , QStyle
+from PySide6.QtWidgets import QStyledItemDelegate, QTableView, QStyle
 
 
 
@@ -103,8 +103,9 @@ class DatabaseTableView(QTableView):
         if not self.db.open():
             print("Fatal Error: Could not connect QSqlDatabase.")
             sys.exit(1)
+        self.table = table_name
         self.model = ReadOnlySqlModel(self, self.db)
-        self.model.setTable(table_name)
+        self.model.setTable(self.table)
         self.model.select()
         self.setModel(self.model)
 
@@ -112,14 +113,20 @@ class DatabaseTableView(QTableView):
         self.setItemDelegateForColumn(image_column_index, self.image_delegate)
         self.status_delegate = StatusHighlightDelegate(self)
         self.setItemDelegate(self.status_delegate)
-
+        
+        self.setWordWrap(True)
         self.setColumnHidden(0, True)
-        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        header = self.horizontalHeader()
-        header.setSectionResizeMode(QHeaderView.Stretch)
+        self.setColumnWidth(image_column_index, 100)
+        self.horizontalHeader().setDefaultSectionSize(200)
+        self.setTextElideMode(Qt.TextElideMode.ElideNone)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+
         self.verticalHeader().setDefaultSectionSize(85)
         self.setAlternatingRowColors(True)
 
 
     def refreshdb(self):
+        self.model.setTable(self.table)
         self.model.select()
+        self.setColumnHidden(0, True)
